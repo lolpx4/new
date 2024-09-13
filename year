@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Idade</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden; /* Impede a rolagem se houver muitos elementos animados */
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            position: relative; /* Necessário para posicionar as reações animadas dentro da container */
+            overflow: hidden;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .resultado {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .error {
+            color: red;
+            margin-bottom: 10px;
+        }
+
+        .easter-eggs {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .easter-eggs img {
+            width: 200px; /* Aumenta a visibilidade do GIF para o dobro do tamanho original */
+            height: auto;
+            margin: 10px;
+        }
+
+        .gif-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .reaction {
+            position: absolute;
+            font-size: 32px;
+            pointer-events: none;
+            animation: float 20s ease-in-out forwards;
+        }
+
+        .floating-gif {
+            position: absolute;
+            width: 100px;
+            height: auto;
+            pointer-events: none;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Calculadora de Idade</h1>
+        
+        <div id="error" class="error"></div>
+
+        <div class="input-group">
+            <input type="text" id="nome" placeholder="Seu nome" />
+            <input type="number" id="ano" placeholder="Ano de nascimento" min="1900" max="2100" />
+            <input type="number" id="mes" placeholder="Mês de nascimento (1-12)" min="1" max="12" />
+            <input type="number" id="dia" placeholder="Dia de nascimento" min="1" />
+            <button onclick="calcularIdade()">Confirmar</button>
+        </div>
+
+        <div id="resultado" class="resultado"></div>
+        <div id="easter-eggs" class="easter-eggs">
+            <div class="gif-container">
+                <img src="https://media.giphy.com/media/3o6MbrjMfYka0SoP5u/giphy.gif" alt="GIF de Reação Fofa 1" />
+                <img src="https://media.giphy.com/media/3o6ZsX4K2mYp6U6Te8/giphy.gif" alt="GIF de Reação Fofa 2" />
+                <img src="https://media.giphy.com/media/3o6Zt6xRLgXW3s0g2E/giphy.gif" alt="GIF de Feliz Aniversário 1" />
+                <img src="https://media.giphy.com/media/8vQS6p8zK9APG/giphy.gif" alt="GIF de Feliz Aniversário 2" />
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calcularIdade() {
+            const nomeInput = document.getElementById('nome');
+            const anoInput = document.getElementById('ano');
+            const mesInput = document.getElementById('mes');
+            const diaInput = document.getElementById('dia');
+            const resultado = document.getElementById('resultado');
+            const error = document.getElementById('error');
+            const easterEggs = document.getElementById('easter-eggs');
+
+            const nomeUsuario = nomeInput.value || 'Usuário';
+            const ano = parseInt(anoInput.value);
+            const mes = parseInt(mesInput.value);
+            const dia = parseInt(diaInput.value);
+
+            error.textContent = '';
+            resultado.textContent = '';
+            easterEggs.style.display = 'none';  // Esconde os GIFs inicialmente
+
+            // Esconde as reações animadas antes de calcular
+            document.querySelectorAll('.reaction').forEach(el => el.remove());
+
+            if (isNaN(ano) || isNaN(mes) || isNaN(dia)) {
+                error.textContent = 'Por favor, preencha todos os campos.';
+                return;
+            }
+
+            if (mes < 1 || mes > 12) {
+                error.textContent = 'Mês inválido. Digite um valor entre 1 e 12.';
+                return;
+            }
+
+            const diasPorMes = [31, (ano % 4 === 0 && ano % 100 !== 0) || ano % 400 === 0 ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+            if (dia < 1 || dia > diasPorMes[mes - 1]) {
+                error.textContent = `Dia inválido. O mês ${mes} tem apenas ${diasPorMes[mes - 1]} dias.`;
+                return;
+            }
+
+            const hoje = new Date();
+            const dataNascimento = new Date(ano, mes - 1, dia);
+
+            if (dataNascimento > hoje) {
+                error.textContent = 'Data de nascimento não pode ser no futuro.';
+                return;
+            }
+
+            let idade = hoje.getFullYear() - dataNascimento.getFullYear();
+            const mesAtual = hoje.getMonth() + 1;
+            const diaAtual = hoje.getDate();
+
+            if (mesAtual < mes || (mesAtual === mes && diaAtual < dia)) {
+                idade--;
+            }
+
+            resultado.textContent = `${nomeUsuario}, sua idade é: ${idade} anos.`;
+
+            verificarAniversario(hoje, mes, dia, nomeUsuario);
+        }
+
+        function verificarAniversario(hoje, mesAniversario, diaAniversario, nomeUsuario) {
+            const mesAtual = hoje.getMonth() + 1;
+            const diaAtual = hoje.getDate();
+
+            const dataAniversarioEsteAno = new Date(hoje.getFullYear(), mesAniversario - 1, diaAniversario);
+            const dataAniversarioProximoAno = new Date(hoje.getFullYear() + 1, mesAniversario - 1, diaAniversario);
+
+            const diasParaAniversario = Math.ceil((dataAniversarioEsteAno - hoje) / (1000 * 60 * 60 * 24));
+            const aniversarioProximo = diasParaAniversario >= 0 && diasParaAniversario <= 30;
+
+            if (aniversarioProximo) {
+                resultado.textContent += `\nTá ficando mais velha, hein gata! 🎉`;
+                setTimeout(() => {
+                    document.getElementById('easter-eggs').style.display = 'block';
+                    adicionarReacoes();
+                    adicionarGIFsFlutuantes();
+                }, 2000);  // Exibe os GIFs e reações após 2 segundos
+            } else if (diasParaAniversario < 0 && (dataAniversarioProximoAno - hoje) / (1000 * 60 * 60 * 24) <= 30) {
+                resultado.textContent += `\nSeu aniversário já passou há pouco tempo.`;
+            }
+        }
+
+        function adicionarReacoes() {
+            const container = document.querySelector('.container');
+            const reacoes = ['🎉', '😻', '🎂', '🎈', '🌟'];
+
+            for (let i = 0; i < 10; i++) {
+                const reaction = document.createElement('div');
+                reaction.classList.add('reaction');
+                reaction.textContent = reacoes[Math.floor(Math.random() * reacoes.length)];
+                reaction.style.left = Math.random() * 100 + '%';
+                reaction.style.top = Math.random() * 100 + '%';
+                container.appendChild(reaction);
+                
+                // Remove a reação após 20 segundos
+                setTimeout(() => reaction.remove(), 20000);
+            }
+        }
+
+        function adicionarGIFsFlutuantes() {
+            const container = document.querySelector('.container');
+            const gifsFofos = [
+                'https://media.giphy.com/media/3o6MbrjMfYka0SoP5u/giphy.gif',  // GIF fofo 1
+                'https://media.giphy.com/media/3o6ZsX4K2mYp6U6Te8/giphy.gif'   // GIF fofo 2
+            ];
+            const gifsAniversario = [
+                'https://media.giphy.com/media/3o6Zt6xRLgXW3s0g2E/giphy.gif',  // GIF de aniversário 1
+                'https://media.giphy.com/media/8vQS6p8zK9APG/giphy.gif'        // GIF de aniversário 2
+            ];
+
+            const todosGifs = gifsFofos.concat(gifsAniversario);
+
+            for (let i = 0; i < 5; i++) {
+                const gif = document.createElement('img');
+                gif.src = todosGifs[Math.floor(Math.random() * todosGifs.length)];
+                gif.classList.add('floating-gif');
+                gif.style.left = Math.random() * 100 + '%';
+                gif.style.top = Math.random() * 100 + '%';
+                container.appendChild(gif);
+                
+                // Remove o GIF após 20 segundos
+                setTimeout(() => gif.remove(), 20000);
+            }
+        }
+    </script>
+</body>
+</html>
